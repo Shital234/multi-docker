@@ -1,0 +1,28 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t shital85/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run shital85/react-test npm test -- --coverage
+
+after_succes:
+  - docker build shital85/multi-client ./client
+  - docker build shital85/multi-nginx ./nginx
+  - docker build shital85/multi-server ./server
+  - docker build shital85/multi-worker ./worker
+
+  #login to docker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  #take those images and pushto docker hub
+
+  - docker push shital85/multi-client
+  - docker push shital85/multi-nginx
+  - docker push shital85/multi-server
+  - docker push shital85/multi-worker
+
+
